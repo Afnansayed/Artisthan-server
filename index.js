@@ -11,7 +11,7 @@ app.use(express.json());
 //MONGODB
 //console.log(process.env.DB_KEY);
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_KEY}@cluster0.khblnbj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -29,12 +29,20 @@ async function run() {
     await client.connect();
 
     const artsCollection = client.db('artsDB').collection('allArt');
-    
+    //get all data
     app.get('/allArt', async(req,res) => {
          const cursor = artsCollection.find();
          const result = await cursor.toArray();
          res.send(result)
     })
+    //get single data
+    app.get('/allArt/:id',async (req,res)=> {
+          const id = req.params.id;
+          const query = {_id: new ObjectId(id)};
+          const result = await artsCollection.findOne(query);
+          res.send(result);
+    })
+    //insert one data
     app.post('/allArt',async(req,res) => {
           const art = req.body;
           const result = await artsCollection.insertOne(art);
