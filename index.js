@@ -1,6 +1,7 @@
 const express = require('express');
 const cors =  require('cors');
 require('dotenv').config();
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -11,7 +12,7 @@ app.use(express.json());
 //MONGODB
 //console.log(process.env.DB_KEY);
 
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_KEY}@cluster0.khblnbj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -48,6 +49,29 @@ async function run() {
           const result = await artsCollection.insertOne(art);
           res.send(result);
     })
+    //Update data
+    app.put('/allArt/:id',async(req,res)=> {
+          const art = req.body;
+          const id = req.params.id;
+          const filter = {_id: new ObjectId(id)};
+          const options = {upsert: true};
+          const updatedArt = {
+            $set:{
+              image: art.image,
+              item_name: art.item_name,
+              subcategory_Name:art.subcategory_Name,
+              shortDescription: art.shortDescription,
+              price: art.price,
+              rating: art.rating,
+              customization: art.customization,
+              processing_time:art.processing_time,
+              stockStatus:art.stockStatus
+            }
+          }
+          const result = await artsCollection.updateOne(filter,updatedArt,options);
+          res.send(result)
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
